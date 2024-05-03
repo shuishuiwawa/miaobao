@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#result, #birthdayText {
+  font-family: Impact, sans-serif;
+  color: #00CC66;
+}
+</style>
+<script>
+
+    const apiUrl = 'https://47.116.12.3/api.php';
+    const key = 'myKey';
+
+    // Function to fetch the value from the API
+    function fetchValue() {
+        fetch(`${apiUrl}?key=${key}`)
+            .then(response => response.json())
+            .then(data => {
+                var resValue = data.value;
+                if (data.status === 'success') {
+                    document.getElementById('count').textContent = resValue;
+                    if (resValue >= parseInt(document.getElementById('count').textContent)) {
+                        document.getElementById("result").innerHTML = "You have celebrated Mianbao's birthday " + resValue + " time(s).";
+                    }
+                } else {
+                    document.getElementById("result").innerHTML = "You have not celebrated Mianbao's birthday yet.";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // Function to increment the value on the server
+    function incrementValue() {
+        var currentValue = parseInt(document.getElementById('count').textContent);
+        if (isNaN(currentValue)) {
+            currentValue = 0;
+        }
+        var newValue = currentValue + 1;
+        if (newValue > 22) {
+            newValue = 0;
+            document.getElementById('celebration').style.display = "none";
+            document.getElementById('celebration-finished').style.display = "block";
+        }
+        document.getElementById('count').textContent = newValue;
+        document.getElementById("result").innerHTML = "You have celebrated Mianbao's birthday " + newValue + " time(s).";
+
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                key: key,
+                value: newValue
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                fetchValue(); // Refresh the value after incrementing
+            } else {
+                console.error('Error:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Fetch the initial value when the page loads
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchValue();
+        document.getElementById("birthdayText").innerHTML = "Click the shrimp to celebrate Mianbao's birthday";
+    });
+    
+</script>
+</head>
+<body>
+
+    <div id="celebration">
+        <p><button onclick="incrementValue()" type="button"><img src="https://i.imgflip.com/5mlslh.png" alt="Mianbao's Birthday" style="width: 322px; height: 271;"></button></p>
+        <div id="result"></div>
+        <div id="count" hidden></div>
+        <p id="birthdayText"></p>
+    </div>
+    <div id="celebration-finished" style="display: none;">
+        <img src="https://i.ibb.co/c84qfh7/10000-celebration.png" alt="Mianbao's Birthday" style="width: 322px; height: 271;">
+    </div>
+</body>
+</html>
